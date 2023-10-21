@@ -115,7 +115,7 @@ def has_shine_dalgarno(shine_regex: Pattern, sequence: str, start: int, max_shin
     """
     if start-max_shine_dalgarno_distance < 0:
         return False
-    match = shine_regex.search(sequence, start-max_shine_dalgarno_distance, start - 5)
+    match = shine_regex.search(sequence, start-max_shine_dalgarno_distance, start - 6)
     if match:
         return True
     return False
@@ -143,21 +143,15 @@ def predict_genes(sequence: str, start_regex: Pattern, stop_regex: Pattern, shin
             # Finding codon stop
             stop = find_stop(stop_regex, sequence, position_courante)
             if stop:
-                gene_len = stop+2-position_courante+1
-
+                gene_len = stop-position_courante
                 if gene_len >= min_gene_len:
                     #If found shine dalgarno seq : 
                     if has_shine_dalgarno(shine_regex, sequence, position_courante, max_shine_dalgarno_distance):
                             gene_list.append([position_courante+1, stop+3])
                             position_courante = stop + 3 + min_gap
-                    else :
-                        position_courante = position_courante + 1
-                else:
-                    position_courante = position_courante + 1
-            else:
-                position_courante = position_courante + 1
-        else:
-            break
+                            continue
+        position_courante+=1
+                    
     return gene_list
 
 
@@ -240,12 +234,14 @@ def main() -> None: # pragma: no cover
     sequence_rc = reverse_complement(seq)
     # Call to output functions
     gene_predict_reverse = predict_genes(sequence_rc, start_regex,stop_regex,shine_regex, args.min_gene_len, args.max_shine_dalgarno_distance,args.min_gap)
-
+    for gene in gene_predict_reverse :
+        tmp = len(seq)-gene[1]
+        gene[1] = len(seq) - gene[0] +1
+        gene[0] = tmp+1
+        
     all_genes = gene_predict + gene_predict_reverse
-
-    all_genes_sorted = sorted(all_genes, key=lambda x: x[0])
-
-    write_genes_pos(args.predicted_genes_file, all_genes_sorted)
+    write_genes_pos(args.predicted_genes_file, sorted(all_genes))
+    write_genes(args.fasta_file, seq, gene_predict, sequence_rc, gene_predict_reverse)
 
 if __name__ == '__main__':
     main()
