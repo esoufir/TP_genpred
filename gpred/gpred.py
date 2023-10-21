@@ -228,11 +228,9 @@ def main() -> None: # pragma: no cover
 
     # Let us do magic in 5' to 3'
     gene_predict = predict_genes(seq, start_regex,stop_regex,shine_regex, args.min_gene_len, args.max_shine_dalgarno_distance,args.min_gap)
-    # Don't forget to uncomment !!!
-    # Call these function in the order that you want
+
     # We reverse and complement
     sequence_rc = reverse_complement(seq)
-    # Call to output functions
     gene_predict_reverse = predict_genes(sequence_rc, start_regex,stop_regex,shine_regex, args.min_gene_len, args.max_shine_dalgarno_distance,args.min_gap)
     for gene in gene_predict_reverse :
         tmp = len(seq)-gene[1]
@@ -240,6 +238,7 @@ def main() -> None: # pragma: no cover
         gene[0] = tmp+1
         
     all_genes = gene_predict + gene_predict_reverse
+    # Call to output functions
     write_genes_pos(args.predicted_genes_file, sorted(all_genes))
     write_genes(args.fasta_file, seq, gene_predict, sequence_rc, gene_predict_reverse)
 
